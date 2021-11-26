@@ -1,0 +1,9 @@
+C:\Users\User\source\repos\maoi_5\bin\Release\maoi_5.exe.config
+C:\Users\User\source\repos\maoi_5\bin\Release\maoi_5.exe
+C:\Users\User\source\repos\maoi_5\bin\Release\maoi_5.pdb
+C:\Users\User\source\repos\maoi_5\obj\Release\maoi_5.Form1.resources
+C:\Users\User\source\repos\maoi_5\obj\Release\maoi_5.Properties.Resources.resources
+C:\Users\User\source\repos\maoi_5\obj\Release\maoi_5.csproj.GenerateResource.cache
+C:\Users\User\source\repos\maoi_5\obj\Release\maoi_5.csproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\maoi_5\obj\Release\maoi_5.exe
+C:\Users\User\source\repos\maoi_5\obj\Release\maoi_5.pdb
