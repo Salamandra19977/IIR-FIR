@@ -35,6 +35,7 @@
             System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.textBoxOften1 = new System.Windows.Forms.TextBox();
             this.textBoxAmplitude1 = new System.Windows.Forms.TextBox();
             this.textBoxFaza1 = new System.Windows.Forms.TextBox();
@@ -50,12 +51,14 @@
             this.textBoxIteration = new System.Windows.Forms.TextBox();
             this.chartOutput = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.dataGridViewOtput = new System.Windows.Forms.DataGridView();
+            this.buttonSend = new System.Windows.Forms.Button();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.buttonSend = new System.Windows.Forms.Button();
             this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.chartOutput)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOtput)).BeginInit();
             this.SuspendLayout();
@@ -168,7 +171,7 @@
             this.textBoxIteration.Name = "textBoxIteration";
             this.textBoxIteration.Size = new System.Drawing.Size(372, 27);
             this.textBoxIteration.TabIndex = 12;
-            this.textBoxIteration.Text = "5";
+            this.textBoxIteration.Text = "20";
             // 
             // chartOutput
             // 
@@ -199,11 +202,16 @@
             series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
             series5.Legend = "Legend1";
             series5.Name = "IIR";
+            series6.ChartArea = "ChartArea1";
+            series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series6.Legend = "Legend1";
+            series6.Name = "IIR_C";
             this.chartOutput.Series.Add(series1);
             this.chartOutput.Series.Add(series2);
             this.chartOutput.Series.Add(series3);
             this.chartOutput.Series.Add(series4);
             this.chartOutput.Series.Add(series5);
+            this.chartOutput.Series.Add(series6);
             this.chartOutput.Size = new System.Drawing.Size(487, 369);
             this.chartOutput.TabIndex = 13;
             this.chartOutput.Text = "chart1";
@@ -218,11 +226,24 @@
             this.Column2,
             this.Column3,
             this.Column4,
-            this.Column5});
+            this.Column5,
+            this.Column6,
+            this.Column8});
             this.dataGridViewOtput.Location = new System.Drawing.Point(502, 12);
             this.dataGridViewOtput.Name = "dataGridViewOtput";
-            this.dataGridViewOtput.Size = new System.Drawing.Size(559, 566);
+            this.dataGridViewOtput.Size = new System.Drawing.Size(771, 566);
             this.dataGridViewOtput.TabIndex = 14;
+            // 
+            // buttonSend
+            // 
+            this.buttonSend.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonSend.Location = new System.Drawing.Point(9, 169);
+            this.buttonSend.Name = "buttonSend";
+            this.buttonSend.Size = new System.Drawing.Size(487, 32);
+            this.buttonSend.TabIndex = 15;
+            this.buttonSend.Text = "Обработать";
+            this.buttonSend.UseVisualStyleBackColor = true;
+            this.buttonSend.Click += new System.EventHandler(this.ButtonSend_Click);
             // 
             // Column1
             // 
@@ -244,27 +265,26 @@
             this.Column4.HeaderText = "FIR";
             this.Column4.Name = "Column4";
             // 
-            // buttonSend
-            // 
-            this.buttonSend.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonSend.Location = new System.Drawing.Point(9, 169);
-            this.buttonSend.Name = "buttonSend";
-            this.buttonSend.Size = new System.Drawing.Size(487, 32);
-            this.buttonSend.TabIndex = 15;
-            this.buttonSend.Text = "Обработать";
-            this.buttonSend.UseVisualStyleBackColor = true;
-            this.buttonSend.Click += new System.EventHandler(this.ButtonSend_Click);
-            // 
             // Column5
             // 
             this.Column5.HeaderText = "IIR";
             this.Column5.Name = "Column5";
             // 
+            // Column6
+            // 
+            this.Column6.HeaderText = "DFT";
+            this.Column6.Name = "Column6";
+            // 
+            // Column8
+            // 
+            this.Column8.HeaderText = "IIR_CASCADE";
+            this.Column8.Name = "Column8";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1073, 586);
+            this.ClientSize = new System.Drawing.Size(1290, 586);
             this.Controls.Add(this.buttonSend);
             this.Controls.Add(this.dataGridViewOtput);
             this.Controls.Add(this.chartOutput);
@@ -285,7 +305,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Margin = new System.Windows.Forms.Padding(3, 5, 3, 5);
             this.Name = "Form1";
-            this.Text = "Л/Р 5";
+            this.Text = "Л/Р 5-6";
             ((System.ComponentModel.ISupportInitialize)(this.chartOutput)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOtput)).EndInit();
             this.ResumeLayout(false);
@@ -316,6 +336,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column6;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column8;
     }
 }
 

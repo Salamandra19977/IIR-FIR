@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -23,22 +24,23 @@ namespace maoi_5
         public List<double> Sinewave = new List<double>();
         public List<double> Sinewave_FIR = new List<double>();
         public List<double> Sinewave_IIR = new List<double>();
+        public List<double> DFT = new List<double>();
+        public List<double> IIR_CASCADE = new List<double>();
+
 
         public double[] coeffs = new double[] {
-        0.023434548635770124,
-        - 0.056537829917584249,
-        - 0.040025935233797313,
-        0.091764496396069706,
-        0.28857865343342576,
-        0.38506292667056707,
-        0.28857865343342576,
-        0.091764496396069706,
-        - 0.040025935233797313,
-        - 0.056537829917584249,
-        0.023434548635770124};
+        1,
+        - 0.05,
+        - 0.08,
+         - 0.08,
+        - 0.05,
+        1};
 
         double[] a = new double[] { 1, -0.31049140353438615 };
         double[] b = new double[] { 1, 1.9999999999999998 };
+        double[] b_1 = new double[] { 1, 2, 1 };
+        double[] a_1 = new double[] { 1, -0.514, 0.329 };
+        double[] a_2 = new double[] { 1, 0.329, -0.514 };
 
         private void ButtonSend_Click(object sender, EventArgs e)
         {
@@ -49,6 +51,8 @@ namespace maoi_5
             Create_Chart();
             FIR(coeffs, Sinewave.ToArray());
             IIR(a, b, Sinewave.ToArray());
+            Dft(Sinewave_FIR.ToArray(), Convert.ToInt32(textBoxIteration.Text), Convert.ToInt32(textBoxIteration.Text) * 2);
+            IIR_c(a_1, a_2, b_1, Sinewave.ToArray());
         }
 
         public void Add_wave(double[,] inp)
@@ -85,6 +89,25 @@ namespace maoi_5
                 inp[2, p] = Math.Round(inp[2, p], 5);
                 Sinewave.Add(inp[2, p]);
                 dataGridViewOtput.Rows[p].Cells[2].Value = inp[2, p];
+            }
+        }
+
+        void Dft(double[] a, int n, int N)
+        {
+            N = a.Length;
+            Complex o = Complex.ImaginaryOne;
+            Complex[] b = new Complex[N];
+
+            for (n = 0; n < N; n++)
+            {
+                b[n] = new Complex();
+                for (int k = 0; k < N; k++)
+                {
+                    b[n] += a[k] * Complex.Exp((-2.0 * o * Math.PI * n * k) / N);
+                }
+
+                DFT.Add(b[n].Magnitude);
+                dataGridViewOtput.Rows[n].Cells[5].Value = b[n].Magnitude;
             }
         }
 
@@ -132,7 +155,41 @@ namespace maoi_5
                 fr.chartOutput.Series[4].Points.AddXY(i + 1, Sinewave_IIR[i]);
                 dataGridViewOtput.Rows[i].Cells[4].Value = ans[i];
             }
+        }
 
+        void IIR_c(double[] a1, double[] a2, double[] b, double[] x)
+        {
+            double[] y = new double[x.Length];
+            double[] temp = new double[x.Length];
+            temp = IIR_df2(a1, b, x);
+            y = IIR_df2(a2, b, temp);
+
+            for (int i = 0; i < y.Length; i++)
+            {
+                IIR_CASCADE.Add(y[i]);
+                //chartOutput.Series[5].Points.AddXY(i + 1, IIR_CASCADE[i]);
+                //fr.chartOutput.Series[5].Points.AddXY(i + 1, IIR_CASCADE[i]);
+                dataGridViewOtput.Rows[i].Cells[6].Value = y[i];
+            }
+        }
+
+        double[] IIR_df2(double[] a, double[] b, double[] x)
+        {
+            double[] y = new double[x.Length];
+            for (int i = 0; i < x.Length; ++i)
+            {
+                double temp = 0;
+                for (int j = 0; j < b.Length; ++j)
+                { if (i - j < 0) continue; temp += b[j] * x[i - j]; }
+
+                for (int j = 1; j < a.Length; ++j)
+                { if (i - j < 0) continue; temp -= a[j] * y[i - j]; }
+
+                temp /= a[0];
+                y[i] = temp;
+            }
+
+            return y;
         }
 
         void Create_Chart()
@@ -159,6 +216,8 @@ namespace maoi_5
             Sinewave = new List<double>();
             Sinewave_FIR = new List<double>();
             Sinewave_IIR = new List<double>();
+            DFT = new List<double>();
+            IIR_CASCADE = new List<double>();
             fr = new Form2();
             dataGridViewOtput.Rows.Clear();
         }

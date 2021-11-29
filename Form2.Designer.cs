@@ -35,6 +35,7 @@
             System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.chartOutput = new System.Windows.Forms.DataVisualization.Charting.Chart();
             ((System.ComponentModel.ISupportInitialize)(this.chartOutput)).BeginInit();
             this.SuspendLayout();
@@ -69,11 +70,16 @@
             series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
             series5.Legend = "Legend1";
             series5.Name = "IIR";
+            series6.ChartArea = "ChartArea1";
+            series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series6.Legend = "Legend1";
+            series6.Name = "IIR_C";
             this.chartOutput.Series.Add(series1);
             this.chartOutput.Series.Add(series2);
             this.chartOutput.Series.Add(series3);
             this.chartOutput.Series.Add(series4);
             this.chartOutput.Series.Add(series5);
+            this.chartOutput.Series.Add(series6);
             this.chartOutput.Size = new System.Drawing.Size(833, 613);
             this.chartOutput.TabIndex = 14;
             this.chartOutput.Text = "chart1";
