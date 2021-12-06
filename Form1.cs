@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
@@ -17,30 +18,13 @@ namespace maoi_5
         {
             InitializeComponent();
         }
-        Form2 fr = new Form2();
 
         public List<double> Wave_1 = new List<double>();
         public List<double> Wave_2 = new List<double>();
         public List<double> Sinewave = new List<double>();
-        public List<double> Sinewave_FIR = new List<double>();
-        public List<double> Sinewave_IIR = new List<double>();
         public List<double> DFT = new List<double>();
-        public List<double> IIR_CASCADE = new List<double>();
-
-
-        public double[] coeffs = new double[] {
-        1,
-        - 0.05,
-        - 0.08,
-         - 0.08,
-        - 0.05,
-        1};
-
-        double[] a = new double[] { 1, -0.31049140353438615 };
-        double[] b = new double[] { 1, 1.9999999999999998 };
-        double[] b_1 = new double[] { 1, 2, 1 };
-        double[] a_1 = new double[] { 1, -0.514, 0.329 };
-        double[] a_2 = new double[] { 1, 0.329, -0.514 };
+        public List<double> Sinewave_Goertzel = new List<double>();
+        public List<double> Sinewave_OptiGoertzel = new List<double>();
 
         private void ButtonSend_Click(object sender, EventArgs e)
         {
@@ -49,10 +33,7 @@ namespace maoi_5
             Add_wave(inp);
             Create_sinewave(inp);
             Create_Chart();
-            FIR(coeffs, Sinewave.ToArray());
-            IIR(a, b, Sinewave.ToArray());
-            Dft(Sinewave_FIR.ToArray(), Convert.ToInt32(textBoxIteration.Text), Convert.ToInt32(textBoxIteration.Text) * 2);
-            IIR_c(a_1, a_2, b_1, Sinewave.ToArray());
+            Time();
         }
 
         public void Add_wave(double[,] inp)
@@ -92,7 +73,7 @@ namespace maoi_5
             }
         }
 
-        void Dft(double[] a, int n, int N)
+        void Dft(double[] a, int n, int N, int count)
         {
             N = a.Length;
             Complex o = Complex.ImaginaryOne;
@@ -107,89 +88,79 @@ namespace maoi_5
                 }
 
                 DFT.Add(b[n].Magnitude);
-                dataGridViewOtput.Rows[n].Cells[5].Value = b[n].Magnitude;
+                dataGridViewOtput.Rows[n].Cells[3].Value = b[n].Magnitude;
+                if (count == 0)
+                chartDFT.Series[0].Points.AddXY(n + 1, DFT[n]);
             }
         }
 
-        void FIR(double[] b, double[] x)
+        void Goertzel(double[] input, int k)
         {
-            double[] y = new double[x.Length];
-            for (int yi = 0; yi < x.Length; yi++)
-            {
-                double t = 0.0;
-                for (int bi = b.Length - 1; bi >= 0; bi--)
-                {
-                    if (yi - bi < 0) continue;
-                    t += b[bi] * x[yi - bi];
-                }
-                y[yi] = t;
-            }
+            int N = input.Length;
+            double[] output = new double[2];
+            double[] temp = new double[N];
+            double a = 2 * Math.Cos(2 * Math.PI * k / N), a2 = (2 * Math.PI * k / N) * (N - 1);
+            double wr = Math.Cos(2 * Math.PI * k / N);
+            double wi = Math.Sin(2 * Math.PI * k / N);
+            temp[0] = input[0];
+            temp[1] = input[1] + a * temp[0];
+            for (int n = 2; n < N; n++)
 
-            for (int i = 0; i < y.Length; i++)
-            {
-                Sinewave_FIR.Add(y[i]);
-                chartOutput.Series[3].Points.AddXY(i + 1, Sinewave_FIR[i]);
-                fr.chartOutput.Series[3].Points.AddXY(i + 1, Sinewave_FIR[i]);
-                dataGridViewOtput.Rows[i].Cells[3].Value = y[i];
-            }
+                temp[n] = input[n] + a * temp[n - 1] - temp[n - 2];
+
+            output[0] = Math.Sqrt(Math.Pow(temp[N - 1] * wr - temp[N - 2], 2) + Math.Pow(temp[N - 1] * wi, 2));
+            output[1] = (Math.Atan((temp[N - 1] * wi) / (temp[N - 1] * wr - temp[N - 2]))) / Math.PI * 180;
+
+            Sinewave_Goertzel.Add(output[0]);
+            dataGridViewOtput.Rows[k].Cells[4].Value = output[0];
         }
 
-        void IIR(double[] ai, double[] bi, double[] x)
+        void OptiGoertzel(double[] input, int k)
         {
-            double aTemp = 0, aTemp2 = 0;
-            double[] temp = new double[x.Length];
-            for (int i = 0; i < x.Length; i++) temp[i] = 0;
-            double[] ans = new double[x.Length];
-            for (int i = 0; i < x.Length; i++)
-            {
-                for (int j = temp.Length - 1; j > 0; j--) temp[j] = temp[j - 1]; temp[0] = x[i];
-                for (int j = 0; j < bi.Length; j++) ans[i] += temp[j] * bi[j];
-                for (int j = 1; j < ai.Length; j++) aTemp += ai[j] * temp[j - 1];
-                ans[i] += aTemp2; aTemp2 = aTemp; aTemp = 0;
-            }
+            int N = input.Length;
+            double output;
+            double[] temp = new double[N];
+            double a = 2 * Math.Cos(2 * Math.PI * k / N), a2 = (2 * Math.PI * k / N) * (N - 1);
+            double wr = Math.Cos(2 * Math.PI * k / N);
+            double wi = Math.Sin(2 * Math.PI * k / N);
+            temp[0] = input[0];
+            temp[1] = input[1] + a * temp[0];
+            for (int n = 2; n < N; n++)
 
-            for (int i = 0; i < ans.Length; i++)
-            {
-                Sinewave_IIR.Add(ans[i]);
-                chartOutput.Series[4].Points.AddXY(i + 1, Sinewave_IIR[i]);
-                fr.chartOutput.Series[4].Points.AddXY(i + 1, Sinewave_IIR[i]);
-                dataGridViewOtput.Rows[i].Cells[4].Value = ans[i];
-            }
+                temp[n] = input[n] + a * temp[n - 1] - temp[n - 2];
+
+            output = Math.Sqrt(Math.Pow(temp[N - 1], 2) + Math.Pow(temp[N - 2], 2) - temp[N - 1] * temp[N - 2] * a);
+
+            Sinewave_OptiGoertzel.Add(output);
+            dataGridViewOtput.Rows[k].Cells[5].Value = output;
         }
 
-        void IIR_c(double[] a1, double[] a2, double[] b, double[] x)
+        void Time()
         {
-            double[] y = new double[x.Length];
-            double[] temp = new double[x.Length];
-            temp = IIR_df2(a1, b, x);
-            y = IIR_df2(a2, b, temp);
+            double[] x = Sinewave.ToArray();
+            Stopwatch s = new Stopwatch();
+            s.Start();
+            for (int i = 0; i < 1000; i++) for (int j = 0; j < x.Length; j++)
+                    Goertzel(x, j);
+            s.Stop();
+            TimeSpan ts = s.Elapsed;
+            dataGridViewOtput.Columns[4].HeaderText = "Goertzel " + Convert.ToString(ts.TotalMilliseconds) + " ms";
 
-            for (int i = 0; i < y.Length; i++)
-            {
-                IIR_CASCADE.Add(y[i]);
-                //chartOutput.Series[5].Points.AddXY(i + 1, IIR_CASCADE[i]);
-                //fr.chartOutput.Series[5].Points.AddXY(i + 1, IIR_CASCADE[i]);
-                dataGridViewOtput.Rows[i].Cells[6].Value = y[i];
-            }
-        }
+           s = new Stopwatch();
+            s.Start();
+            for (int i = 0; i < 1000; i++) for (int j = 0; j < x.Length; j++)
+                    OptiGoertzel(x, j);
+            s.Stop();
+            ts = s.Elapsed;
+            dataGridViewOtput.Columns[5].HeaderText = "OptiGoertzel " + Convert.ToString(ts.TotalMilliseconds) + " ms";
 
-        double[] IIR_df2(double[] a, double[] b, double[] x)
-        {
-            double[] y = new double[x.Length];
-            for (int i = 0; i < x.Length; ++i)
-            {
-                double temp = 0;
-                for (int j = 0; j < b.Length; ++j)
-                { if (i - j < 0) continue; temp += b[j] * x[i - j]; }
-
-                for (int j = 1; j < a.Length; ++j)
-                { if (i - j < 0) continue; temp -= a[j] * y[i - j]; }
-
-                temp /= a[0];
-                y[i] = temp;
-            }
-
-            return y;
+            s = new Stopwatch();
+            s.Start();
+            for (int i = 0; i < 1000; i++)
+                Dft(x, Convert.ToInt32(textBoxIteration.Text), Convert.ToInt32(textBoxIteration.Text) * 2, i);
+            s.Stop();
+            ts = s.Elapsed;
+            dataGridViewOtput.Columns[3].HeaderText = "DFT " + Convert.ToString(ts.TotalMilliseconds) + " ms";
         }
 
         void Create_Chart()
@@ -197,11 +168,8 @@ namespace maoi_5
             for (int i = 0; i < Sinewave.Count; i++)
             {
                 chartOutput.Series[0].Points.AddXY(i + 1, Wave_1[i]);
-                fr.chartOutput.Series[0].Points.AddXY(i + 1, Wave_1[i]);
                 chartOutput.Series[1].Points.AddXY(i + 1, Wave_2[i]);
-                fr.chartOutput.Series[1].Points.AddXY(i + 1, Wave_2[i]);
                 chartOutput.Series[2].Points.AddXY(i + 1, Sinewave[i]);
-                fr.chartOutput.Series[2].Points.AddXY(i + 1, Sinewave[i]);
             }
         }
         void List_Clear()
@@ -209,22 +177,14 @@ namespace maoi_5
             chartOutput.Series[0].Points.Clear();
             chartOutput.Series[1].Points.Clear();
             chartOutput.Series[2].Points.Clear();
-            chartOutput.Series[3].Points.Clear();
-            chartOutput.Series[4].Points.Clear();
+            chartDFT.Series[0].Points.Clear();
             Wave_1 = new List<double>();
             Wave_2 = new List<double>();
             Sinewave = new List<double>();
-            Sinewave_FIR = new List<double>();
-            Sinewave_IIR = new List<double>();
             DFT = new List<double>();
-            IIR_CASCADE = new List<double>();
-            fr = new Form2();
+            Sinewave_Goertzel = new List<double>();
+            Sinewave_OptiGoertzel = new List<double>();
             dataGridViewOtput.Rows.Clear();
-        }
-
-        private void ChartOutput_Click(object sender, EventArgs e)
-        {
-            fr.Show();
         }
     }
 }

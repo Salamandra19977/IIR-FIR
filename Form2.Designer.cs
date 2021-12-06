@@ -71,7 +71,7 @@
             series5.Legend = "Legend1";
             series5.Name = "IIR";
             series6.ChartArea = "ChartArea1";
-            series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             series6.Legend = "Legend1";
             series6.Name = "IIR_C";
             this.chartOutput.Series.Add(series1);
